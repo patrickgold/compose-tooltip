@@ -32,4 +32,5 @@ dependencyResolutionManagement {
     }
 }
 
+include(":example")
 include(":tooltip")
