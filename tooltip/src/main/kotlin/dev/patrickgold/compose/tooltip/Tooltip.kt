@@ -50,8 +50,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
+import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -213,10 +214,10 @@ fun Modifier.tooltip(
             val currentContext = currentCoroutineContext()
             awaitPointerEventScope {
                 while (currentContext.isActive) {
-                    val event = awaitPointerEvent()
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
                     when (event.type) {
                         PointerEventType.Press -> {
-                            if (!event.changes.all { it.changedToDownIgnoreConsumed() }) continue
+                            if (!event.changes.all { it.changedToDown() }) continue
                             isPressed = true
                             if (!isHovered) {
                                 lastTriggerEvent = event
@@ -225,7 +226,6 @@ fun Modifier.tooltip(
                             longPressHideTimeoutJob?.cancel()
                             longPressShowTimeoutJob = scope.launch {
                                 delay(viewConfiguration.longPressTimeoutMillis)
-                                // We are in a long-press scenario -> show tooltip
                                 isTooltipShowing = true
                             }
                         }
@@ -233,6 +233,7 @@ fun Modifier.tooltip(
                             isPressed = false
                             longPressShowTimeoutJob?.cancel()
                             if (isTooltipShowing) {
+                                event.changes.forEach { it.consume() }
                                 longPressHideTimeoutJob = scope.launch {
                                     delay(TooltipLongPressHideTimeout.inWholeMilliseconds)
                                     isTooltipShowing = false
