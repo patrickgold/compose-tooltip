@@ -31,3 +31,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+include(":tooltip")
