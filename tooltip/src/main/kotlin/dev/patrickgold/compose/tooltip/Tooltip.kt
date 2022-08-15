@@ -219,7 +219,7 @@ fun Modifier.tooltip(
                         PointerEventType.Press -> {
                             if (!event.changes.all { it.changedToDown() }) continue
                             isPressed = true
-                            if (!isHovered) {
+                            if (!isHovered && !isTooltipShowing) {
                                 lastTriggerEvent = event
                             }
                             longPressShowTimeoutJob?.cancel()
@@ -242,7 +242,7 @@ fun Modifier.tooltip(
                         }
                         PointerEventType.Enter -> {
                             isHovered = true
-                            if (!isPressed) {
+                            if (!isPressed && !isTooltipShowing) {
                                 lastTriggerEvent = event
                             }
                             hoverShowTimeoutJob?.cancel()
