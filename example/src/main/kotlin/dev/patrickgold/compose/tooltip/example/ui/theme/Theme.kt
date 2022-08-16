@@ -33,9 +33,3 @@ fun ComposeTooltipExampleTheme(darkTheme: Boolean = isSystemInDarkTheme(), conte
         content = content,
     )
 }
-
-enum class Theme {
-    AUTO,
-    LIGHT,
-    DARK;
-}

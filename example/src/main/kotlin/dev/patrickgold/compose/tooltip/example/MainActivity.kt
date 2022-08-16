@@ -8,10 +8,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -22,8 +22,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.MailOutline
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +33,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.patrickgold.compose.tooltip.example.ui.theme.ComposeTooltipExampleTheme
-import dev.patrickgold.compose.tooltip.example.ui.theme.Theme
 import dev.patrickgold.compose.tooltip.tooltip
+
+enum class Theme {
+    AUTO,
+    LIGHT,
+    DARK;
+}
 
 class MainActivity : ComponentActivity() {
     private var theme by mutableStateOf(Theme.AUTO)
@@ -54,30 +59,27 @@ class MainActivity : ComponentActivity() {
                             TopAppBar(
                                 title = { Text(stringResource(R.string.app_name)) },
                                 actions = {
-                                    IconButton(
-                                        onClick = { exampleActionCallback("info") },
-                                        modifier = Modifier.tooltip("Show info")
-                                    ) {
-                                        Icon(Icons.Outlined.Info, "Info")
-                                    }
-                                    IconButton(
-                                        onClick = { exampleActionCallback("mail") },
-                                        modifier = Modifier.tooltip("Show mails")
-                                    ) {
-                                        Icon(Icons.Outlined.MailOutline, "Mail")
+                                    Row {
+                                        IconButton(
+                                            onClick = { exampleActionCallback("search") },
+                                            modifier = Modifier.tooltip("Search examples")
+                                        ) {
+                                            Icon(Icons.Outlined.Search, "Search examples")
+                                        }
+                                        IconButton(
+                                            onClick = { exampleActionCallback("more") },
+                                            modifier = Modifier.tooltip("More options")
+                                        ) {
+                                            Icon(Icons.Outlined.MoreVert, "More options")
+                                        }
                                     }
                                 }
                             )
                         },
                     ) { contentPadding ->
                         Column(Modifier.padding(contentPadding)) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .verticalScroll(rememberScrollState()),
-                            ) {
-                                ThemeChooserBox()
-                            }
+                            Spacer(Modifier.height(92.dp))
+                            ThemeChooserBox()
                         }
                     }
                 }
