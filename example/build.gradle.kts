@@ -22,18 +22,18 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-val pgComposeCompileSdk: String by project
-val pgComposeMinSdk: String by project
-val pgComposeTargetSdk: String by project
+val projectCompileSdk: String by project
+val projectMinSdk: String by project
+val projectTargetSdk: String by project
 
 android {
     namespace = "dev.patrickgold.compose.tooltip.example"
-    compileSdk = pgComposeCompileSdk.toInt()
+    compileSdk = projectCompileSdk.toInt()
 
     defaultConfig {
         applicationId = "dev.patrickgold.compose.tooltip.example"
-        minSdk = pgComposeMinSdk.toInt()
-        targetSdk = pgComposeTargetSdk.toInt()
+        minSdk = projectMinSdk.toInt()
+        targetSdk = projectTargetSdk.toInt()
         versionCode = 1
         versionName = "0.1.0"
 

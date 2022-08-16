@@ -20,23 +20,19 @@
 plugins {
     alias(libs.plugins.agp.library)
     alias(libs.plugins.kotlin.android)
-    id("maven-publish")
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
-val pgComposeCompileSdk: String by project
-val pgComposeMinSdk: String by project
-val pgComposeTargetSdk: String by project
-
-val pgComposeMavenGroupId: String by project
-val pgComposeJitpackGroupId: String by project
-val pgComposeVersion: String by project
+val projectCompileSdk: String by project
+val projectMinSdk: String by project
+val projectTargetSdk: String by project
 
 android {
-    compileSdk = pgComposeCompileSdk.toInt()
+    compileSdk = projectCompileSdk.toInt()
 
     defaultConfig {
-        minSdk = pgComposeMinSdk.toInt()
-        targetSdk = pgComposeTargetSdk.toInt()
+        minSdk = projectMinSdk.toInt()
+        targetSdk = projectTargetSdk.toInt()
         consumerProguardFiles("proguard-rules.pro")
     }
     compileOptions {
@@ -61,10 +57,6 @@ android {
             }
         }
     }
-
-    publishing {
-        singleVariant("release")
-    }
 }
 
 dependencies {
@@ -78,46 +70,4 @@ dependencies {
 val sourcesJar = tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets.getByName("main").java.srcDirs)
-}
-
-group = pgComposeJitpackGroupId
-version = pgComposeVersion
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("composeTooltipRelease").apply {
-                from(components.findByName("release"))
-                artifact(sourcesJar)
-
-                groupId = pgComposeMavenGroupId
-                artifactId = "compose-tooltip"
-                version = pgComposeVersion
-
-                pom {
-                    name.set("Compose Tooltip")
-                    description.set("Tooltip modifier which shows a tooltip which looks and feels like the Android framework tooltip.")
-                    url.set("https://patrickgold.dev/compose-tooltip")
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("patrickgold")
-                            name.set("Patrick Goldinger")
-                            email.set("patrick@patrickgold.dev")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:https://github.com/patrickgold/compose-tooltip/")
-                        developerConnection.set("scm:git:https://github.com/patrickgold/compose-tooltip/")
-                        url.set("https://github.com/patrickgold/compose-tooltip/")
-                    }
-                }
-            }
-        }
-    }
 }
