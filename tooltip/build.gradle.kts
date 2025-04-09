@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Patrick Goldinger
+ * Copyright 2022,2025 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-// Suppress needed until https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
 plugins {
     alias(libs.plugins.agp.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.vanniktech.maven.publish)
 }
 
 val projectCompileSdk: String by project
 val projectMinSdk: String by project
-val projectTargetSdk: String by project
 
 android {
+    namespace = "dev.patrickgold.compose.tooltip"
     compileSdk = projectCompileSdk.toInt()
 
     defaultConfig {
         minSdk = projectMinSdk.toInt()
-        targetSdk = projectTargetSdk.toInt()
         consumerProguardFiles("proguard-rules.pro")
     }
     compileOptions {
@@ -46,9 +43,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-    }
 
     sourceSets {
         maybeCreate("main").apply {
@@ -60,14 +54,14 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
-val sourcesJar = tasks.register<Jar>("sourcesJar") {
+tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets.getByName("main").java.srcDirs)
 }

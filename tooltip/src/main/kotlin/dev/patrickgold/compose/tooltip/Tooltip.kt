@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006,2016 The Android Open Source Project
- * Copyright (C) 2022 Patrick Goldinger
+ * Copyright (C) 2022,2025 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -41,7 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -61,7 +60,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalViewConfiguration
-import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -109,35 +107,79 @@ import kotlinx.coroutines.launch
  *
  * @since 0.1.0
  */
+@Deprecated(
+    "Tooltips cannot be drawn with a modifier anymore, use the new PlainTooltip() wrapper composable instead",
+    level = DeprecationLevel.ERROR
+)
 fun Modifier.tooltip(
     text: CharSequence,
     backgroundColor: Color = Color.Unspecified,
     textColor: Color = Color.Unspecified,
-    textStyle: TextStyle = TooltipTextStyle,
+    textStyle: TextStyle? = null,
     overflow: TextOverflow = TextOverflow.Ellipsis,
     maxLines: Int = 3,
     margin: PaddingValues = TooltipMargin,
     padding: PaddingValues = TooltipPadding,
-    shape: Shape = TooltipShape,
+    shape: Shape? = null,
     windowResolver: @Composable () -> Window = { LocalContext.current.findWindow()!! },
-): Modifier = composed(
-    inspectorInfo = debugInspectorInfo {
-        name = "tooltip"
-        properties["text"] = text
-        properties["backgroundColor"] = backgroundColor
-        properties["textColor"] = textColor
-    }
+): Modifier = Modifier
+
+/**
+ * Material 3 design tooltip following Android's framework tooltip design as close as possible by default.
+ *
+ * The tooltip anchors itself automatically to the wrapped element and does automatic positioning and
+ * sizing in a similar way to the Android framework tooltip.
+ *
+ * Both long-press touch interactions and mouse hover events are supported. For long-press touches, the tooltip starts
+ * to show after the user has triggered a long-click and will then stay until 1.5 seconds after the touch up or cancel
+ * event. For mouse hover interactions, the tooltip is shown after a minimum of 0.5 seconds hover, and then shows until
+ * either the mouse stops hovering or 15 seconds have passed, whichever comes first.
+ *
+ * This tooltip by default can only be used within an [Activity] or [InputMethodService] context, as it requires a
+ * window to properly show. Alternatively a custom [windowResolver] can be passed, where the responsibility is up to
+ * the caller to find the window reference.
+ *
+ * @param text The text to show in the tooltip, supports [AnnotatedString].
+ * @param backgroundColor The background color of this tooltip. Defaults to Material 3 `color.inverseSurface`.
+ * @param textColor The text color of this tooltip. Defaults to Material 3 `color.inverseOnSurface`.
+ * @param textStyle The text style to be applied to the text. Defaults to Material 3 `typography.body-small`.
+ * @param overflow How overflow of the text should be handed. Defaults to [TextOverflow.Ellipsis].
+ * @param maxLines How many lines the tooltip can have at most. Defaults to 3.
+ * @param margin The margin of this tooltip. Defaults to 8dp on all edges.
+ * @param padding The padding of the tooltip. Defaults to 16dp horizontally and 6.5dp vertically.
+ * @param shape The shape of the tooltip. Defaults to Material 3 `shape.corner.extra-small`.
+ * @param windowResolver The window resolver, which is responsible for retrieving the local window. The default
+ *  implementation supports both [Activity] and [InputMethodService] contexts. If a custom provider is passed, it must
+ *  not return null.
+ *
+ * @author Patrick Goldinger
+ *
+ * @since 0.2.0
+ */
+@Composable
+fun PlainTooltip(
+    text: CharSequence,
+    backgroundColor: Color = Color.Unspecified,
+    textColor: Color = Color.Unspecified,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    maxLines: Int = 3,
+    margin: PaddingValues = TooltipMargin,
+    padding: PaddingValues = TooltipPadding,
+    shape: Shape = MaterialTheme.shapes.extraSmall,
+    windowResolver: @Composable () -> Window = { LocalContext.current.findWindow()!! },
+    content: @Composable () -> Unit,
 ) {
     val viewConfiguration = LocalViewConfiguration.current
     val scope = rememberCoroutineScope()
 
     val finalBackgroundColor = when {
         backgroundColor.isSpecified -> backgroundColor
-        else -> if (MaterialTheme.colors.isLight) TooltipBackgroundDark else TooltipBackgroundLight
+        else -> MaterialTheme.colorScheme.inverseSurface
     }
     val finalTextColor = when {
         textColor.isSpecified -> textColor
-        else -> if (MaterialTheme.colors.isLight) TooltipForegroundDark else TooltipForegroundLight
+        else -> MaterialTheme.colorScheme.inverseOnSurface
     }
 
     var isTooltipShowing by remember { mutableStateOf(false) }
@@ -160,37 +202,6 @@ fun Modifier.tooltip(
         triggeredFromTouch = lastTriggerEvent?.type != PointerEventType.Enter,
     )
 
-    if (tooltipAlpha > 0f) {
-        Popup(
-            properties = TooltipPopupProperties,
-            alignment = Alignment.Center,
-            offset = tooltipOffset.round(),
-            onDismissRequest = { isTooltipShowing = false },
-        ) {
-            Box(
-                modifier = Modifier
-                    .onSizeChanged { tooltipSize = it.toSize() }
-                    .alpha(tooltipAlpha)
-                    .padding(margin)
-                    .widthIn(max = 256.dp)
-                    .wrapContentHeight()
-                    .background(finalBackgroundColor, shape)
-                    .padding(padding),
-            ) {
-                val annotatedText = remember(text) {
-                    if (text is AnnotatedString) text else AnnotatedString(text.toString())
-                }
-                Text(
-                    text = annotatedText,
-                    color = finalTextColor,
-                    overflow = overflow,
-                    maxLines = maxLines,
-                    style = textStyle,
-                )
-            }
-        }
-    }
-
     var hoverShowTimeoutJob: Job? = null
     var hoverHideTimeoutJob: Job? = null
     var longPressShowTimeoutJob: Job? = null
@@ -206,68 +217,102 @@ fun Modifier.tooltip(
         }
     }
 
-    Modifier
-        .onGloballyPositioned { coordinates ->
-            anchorBounds = coordinates.boundsInRoot()
-        }
-        .pointerInput(Unit) {
-            val currentContext = currentCoroutineContext()
-            awaitPointerEventScope {
-                while (currentContext.isActive) {
-                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                    when (event.type) {
-                        PointerEventType.Press -> {
-                            if (!event.changes.all { it.changedToDown() }) continue
-                            isPressed = true
-                            if (!isHovered && !isTooltipShowing) {
-                                lastTriggerEvent = event
-                            }
-                            longPressShowTimeoutJob?.cancel()
-                            longPressHideTimeoutJob?.cancel()
-                            longPressShowTimeoutJob = scope.launch {
-                                delay(viewConfiguration.longPressTimeoutMillis)
-                                isTooltipShowing = true
-                            }
-                        }
-                        PointerEventType.Release -> {
-                            isPressed = false
-                            longPressShowTimeoutJob?.cancel()
-                            if (isTooltipShowing) {
-                                event.changes.forEach { it.consume() }
-                                longPressHideTimeoutJob = scope.launch {
-                                    delay(TooltipLongPressHideTimeout.inWholeMilliseconds)
-                                    isTooltipShowing = false
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned { coordinates ->
+                anchorBounds = coordinates.boundsInRoot()
+            }
+            .pointerInput(Unit) {
+                val currentContext = currentCoroutineContext()
+                awaitPointerEventScope {
+                    while (currentContext.isActive) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        when (event.type) {
+                            PointerEventType.Press -> {
+                                if (!event.changes.all { it.changedToDown() }) continue
+                                isPressed = true
+                                if (!isHovered && !isTooltipShowing) {
+                                    lastTriggerEvent = event
+                                }
+                                longPressShowTimeoutJob?.cancel()
+                                longPressHideTimeoutJob?.cancel()
+                                longPressShowTimeoutJob = scope.launch {
+                                    delay(viewConfiguration.longPressTimeoutMillis)
+                                    isTooltipShowing = true
                                 }
                             }
-                        }
-                        PointerEventType.Enter -> {
-                            isHovered = true
-                            if (!isPressed && !isTooltipShowing) {
-                                lastTriggerEvent = event
-                            }
-                            hoverShowTimeoutJob?.cancel()
-                            hoverHideTimeoutJob?.cancel()
-                            hoverShowTimeoutJob = scope.launch {
-                                delay(TooltipHoverShowTimeout.inWholeMilliseconds)
-                                isTooltipShowing = true
-                                hoverHideTimeoutJob = scope.launch {
-                                    delay(TooltipHoverHideTimeout.inWholeMilliseconds)
-                                    isTooltipShowing = false
+                            PointerEventType.Release -> {
+                                isPressed = false
+                                longPressShowTimeoutJob?.cancel()
+                                if (isTooltipShowing) {
+                                    event.changes.forEach { it.consume() }
+                                    longPressHideTimeoutJob = scope.launch {
+                                        delay(TooltipLongPressHideTimeout.inWholeMilliseconds)
+                                        isTooltipShowing = false
+                                    }
                                 }
                             }
-                        }
-                        PointerEventType.Exit -> {
-                            isHovered = false
-                            hoverShowTimeoutJob?.cancel()
-                            hoverHideTimeoutJob?.cancel()
-                            if (!isPressed) {
-                                isTooltipShowing = false
+                            PointerEventType.Enter -> {
+                                isHovered = true
+                                if (!isPressed && !isTooltipShowing) {
+                                    lastTriggerEvent = event
+                                }
+                                hoverShowTimeoutJob?.cancel()
+                                hoverHideTimeoutJob?.cancel()
+                                hoverShowTimeoutJob = scope.launch {
+                                    delay(TooltipHoverShowTimeout.inWholeMilliseconds)
+                                    isTooltipShowing = true
+                                    hoverHideTimeoutJob = scope.launch {
+                                        delay(TooltipHoverHideTimeout.inWholeMilliseconds)
+                                        isTooltipShowing = false
+                                    }
+                                }
+                            }
+                            PointerEventType.Exit -> {
+                                isHovered = false
+                                hoverShowTimeoutJob?.cancel()
+                                hoverHideTimeoutJob?.cancel()
+                                if (!isPressed) {
+                                    isTooltipShowing = false
+                                }
                             }
                         }
                     }
                 }
             }
+    ) {
+        if (tooltipAlpha > 0f) {
+            Popup(
+                properties = TooltipPopupProperties,
+                alignment = Alignment.Center,
+                offset = tooltipOffset.round(),
+                onDismissRequest = { isTooltipShowing = false },
+            ) {
+                Box(
+                    modifier = Modifier
+                        .onSizeChanged { tooltipSize = it.toSize() }
+                        .alpha(tooltipAlpha)
+                        .padding(margin)
+                        .widthIn(max = 200.dp)
+                        .wrapContentHeight()
+                        .background(finalBackgroundColor, shape)
+                        .padding(padding),
+                ) {
+                    val annotatedText = remember(text) {
+                        text as? AnnotatedString ?: AnnotatedString(text.toString())
+                    }
+                    Text(
+                        text = annotatedText,
+                        color = finalTextColor,
+                        overflow = overflow,
+                        maxLines = maxLines,
+                        style = textStyle,
+                    )
+                }
+            }
         }
+        content()
+    }
 }
 
 private tailrec fun Context.findWindow(): Window? {

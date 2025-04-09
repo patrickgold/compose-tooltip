@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006,2016 The Android Open Source Project
- * Copyright (C) 2022 Patrick Goldinger
+ * Copyright (C) 2022,2025 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,43 +21,19 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import kotlin.time.Duration.Companion.milliseconds
 
 // Dimension values taken from framework default dimensions:
 // https://android.googlesource.com/platform/frameworks/base/+/02772f2e7a6f497a6e209bb8104681468d40d090/core/res/res/values/dimens.xml#724
-internal val TooltipYOffsetTouch = 16.dp
+internal val TooltipYOffsetTouch = 4.dp
 internal val TooltipYOffsetNonTouch = 0.dp
 internal val TooltipMargin = PaddingValues(all = 8.dp)
-internal val TooltipPadding = PaddingValues(horizontal = 16.dp, vertical = 6.5.dp)
-internal val TooltipShape = RoundedCornerShape(2.dp)
+internal val TooltipPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
 internal val TooltipPreciseAnchorThreshold = 96.dp
 internal val TooltipPreciseAnchorExtraThreshold = 8.dp
-
-// Text style has been extracted from the framework TextAppearance.Tooltip:
-// https://android.googlesource.com/platform/frameworks/base/+/02772f2e7a6f497a6e209bb8104681468d40d090/core/res/res/values/styles.xml#973
-internal val TooltipTextStyle = TextStyle(
-    fontFamily = FontFamily.SansSerif,
-    fontSize = 14.sp,
-)
-
-// Background colors extracted from framework core colors:
-// https://android.googlesource.com/platform/frameworks/base/+/02772f2e7a6f497a6e209bb8104681468d40d090/core/res/res/values/colors.xml#220
-internal val TooltipBackgroundDark = Color(0xe6616161)
-internal val TooltipBackgroundLight = Color(0xe6FFFFFF)
-
-// Foreground colors in framework Theme.Material(.Light):
-// https://android.googlesource.com/platform/frameworks/base/+/863a88ef074b8bda119e7f8645e5a53f7d51fc34/core/res/res/values/themes_material.xml#410
-// https://android.googlesource.com/platform/frameworks/base/+/863a88ef074b8bda119e7f8645e5a53f7d51fc34/core/res/res/values/themes_material.xml#786
-internal val TooltipForegroundDark = Color.White
-internal val TooltipForegroundLight = Color.Black
 
 // Background colors extracted from framework core colors:
 // https://android.googlesource.com/platform/frameworks/base/+/02772f2e7a6f497a6e209bb8104681468d40d090/core/res/res/values/colors.xml#220

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,18 +13,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,8 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.patrickgold.compose.tooltip.PlainTooltip
 import dev.patrickgold.compose.tooltip.example.ui.theme.ComposeTooltipExampleTheme
-import dev.patrickgold.compose.tooltip.tooltip
 
 enum class Theme {
     AUTO,
@@ -44,8 +44,10 @@ enum class Theme {
 class MainActivity : ComponentActivity() {
     private var theme by mutableStateOf(Theme.AUTO)
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             val isDarkTheme = when (theme) {
                 Theme.AUTO -> isSystemInDarkTheme()
@@ -53,34 +55,34 @@ class MainActivity : ComponentActivity() {
                 Theme.DARK -> true
             }
             ComposeTooltipExampleTheme(isDarkTheme) {
-                Surface(color = MaterialTheme.colors.background) {
-                    Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = { Text(stringResource(R.string.app_name)) },
-                                actions = {
-                                    Row {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text(stringResource(R.string.app_name)) },
+                            actions = {
+                                Row {
+                                    PlainTooltip("Search examples") {
                                         IconButton(
                                             onClick = { exampleActionCallback("search") },
-                                            modifier = Modifier.tooltip("Search examples")
                                         ) {
                                             Icon(Icons.Outlined.Search, "Search examples")
                                         }
+                                    }
+                                    PlainTooltip("More options") {
                                         IconButton(
                                             onClick = { exampleActionCallback("more") },
-                                            modifier = Modifier.tooltip("More options")
                                         ) {
                                             Icon(Icons.Outlined.MoreVert, "More options")
                                         }
                                     }
                                 }
-                            )
-                        },
-                    ) { contentPadding ->
-                        Column(Modifier.padding(contentPadding)) {
-                            Spacer(Modifier.height(92.dp))
-                            ThemeChooserBox()
-                        }
+                            }
+                        )
+                    },
+                ) { contentPadding ->
+                    Column(Modifier.padding(contentPadding)) {
+                        Spacer(Modifier.height(92.dp))
+                        ThemeChooserBox()
                     }
                 }
             }
@@ -98,29 +100,35 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Button(
-                    onClick = { theme = Theme.AUTO },
-                    colors = with (ButtonDefaults) {
-                        if (theme == Theme.AUTO) buttonColors() else outlinedButtonColors()
-                    },
-                ) {
-                    Text(text = "System")
+                PlainTooltip("Left button") {
+                    Button(
+                        onClick = { theme = Theme.AUTO },
+                        colors = with(ButtonDefaults) {
+                            if (theme == Theme.AUTO) buttonColors() else outlinedButtonColors()
+                        },
+                    ) {
+                        Text(text = "System")
+                    }
                 }
-                Button(
-                    onClick = { theme = Theme.LIGHT },
-                    colors = with (ButtonDefaults) {
-                        if (theme == Theme.LIGHT) buttonColors() else outlinedButtonColors()
-                    },
-                ) {
-                    Text(text = "Light")
+                PlainTooltip("Center button") {
+                    Button(
+                        onClick = { theme = Theme.LIGHT },
+                        colors = with (ButtonDefaults) {
+                            if (theme == Theme.LIGHT) buttonColors() else outlinedButtonColors()
+                        },
+                    ) {
+                        Text(text = "Light")
+                    }
                 }
-                Button(
-                    onClick = { theme = Theme.DARK },
-                    colors = with (ButtonDefaults) {
-                        if (theme == Theme.DARK) buttonColors() else outlinedButtonColors()
-                    },
-                ) {
-                    Text(text = "Dark")
+                PlainTooltip("Right button") {
+                    Button(
+                        onClick = { theme = Theme.DARK },
+                        colors = with (ButtonDefaults) {
+                            if (theme == Theme.DARK) buttonColors() else outlinedButtonColors()
+                        },
+                    ) {
+                        Text(text = "Dark")
+                    }
                 }
             }
         }

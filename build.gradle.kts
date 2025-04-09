@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Patrick Goldinger
+ * Copyright (C) 2022,2025 Patrick Goldinger
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-// Suppress needed until https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
 plugins {
     alias(libs.plugins.agp.application) apply false
     alias(libs.plugins.agp.library) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.plugin.compose) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
 }
