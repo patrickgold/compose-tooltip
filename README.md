@@ -75,6 +75,7 @@ This composable by default can only be used within an Activity or InputMethodSer
 - `margin`: The margin of this tooltip. Defaults to 8dp on all edges.
 - `padding`: The padding of the tooltip. Defaults to 16dp horizontally and 6.5dp vertically.
 - `shape`: The shape of the tooltip. Defaults to Material 3 `shape.corner.extra-small`.
+- `enabled`: If this tooltip is enabled and showing on long-press. Defaults to true.
 - `windowResolver`: The window resolver, which is responsible for retrieving the local window. The default implementation supports both [Activity] and [InputMethodService] contexts. If a custom provider is passed, it must not return null.
 
 **_Composable signature:_**
@@ -91,6 +92,7 @@ fun PlainTooltip(
     margin: PaddingValues = TooltipMargin,
     padding: PaddingValues = TooltipPadding,
     shape: Shape = MaterialTheme.shapes.extraSmall,
+    enabled: Boolean = true,
     windowResolver: @Composable () -> Window = { LocalContext.current.findWindow()!! },
     content: @Composable () -> Unit,
 )

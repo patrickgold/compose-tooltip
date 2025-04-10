@@ -148,6 +148,7 @@ fun Modifier.tooltip(
  * @param margin The margin of this tooltip. Defaults to 8dp on all edges.
  * @param padding The padding of the tooltip. Defaults to 16dp horizontally and 6.5dp vertically.
  * @param shape The shape of the tooltip. Defaults to Material 3 `shape.corner.extra-small`.
+ * @param enabled If this tooltip is enabled and showing on long-press. Defaults to true.
  * @param windowResolver The window resolver, which is responsible for retrieving the local window. The default
  *  implementation supports both [Activity] and [InputMethodService] contexts. If a custom provider is passed, it must
  *  not return null.
@@ -167,9 +168,15 @@ fun PlainTooltip(
     margin: PaddingValues = TooltipMargin,
     padding: PaddingValues = TooltipPadding,
     shape: Shape = MaterialTheme.shapes.extraSmall,
+    enabled: Boolean = true,
     windowResolver: @Composable () -> Window = { LocalContext.current.findWindow()!! },
     content: @Composable () -> Unit,
 ) {
+    if (!enabled) {
+        content()
+        return
+    }
+
     val viewConfiguration = LocalViewConfiguration.current
     val scope = rememberCoroutineScope()
 
