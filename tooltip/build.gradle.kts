@@ -23,6 +23,9 @@ plugins {
 
 val projectCompileSdk: String by project
 val projectMinSdk: String by project
+val projectGroupId: String by project
+val artifactId = "tooltip"
+val projectVersion: String by project
 
 android {
     namespace = "dev.patrickgold.compose.tooltip"
@@ -64,4 +67,8 @@ dependencies {
 tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets.getByName("main").java.srcDirs)
+}
+
+mavenPublishing {
+    coordinates(projectGroupId, artifactId, projectVersion)
 }
